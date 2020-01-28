@@ -45,6 +45,37 @@ Resources:
           ToPort: 80
           CidrIp: 0.0.0.0/0
 
+  ApacheLinux2LaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      LaunchConfigurationName: 'Apache simple server'
+      ImageId: ami-0713f98de93617bb4 # Amazon Linux 2 image
+      InstanceMonitoring: true
+      InstanceType: t2.micro
+      KeyName: !Ref SSHKeyName
+      SecurityGroups:
+        - !Ref EC2SecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum update -y
+          yum install -y httpd.x86_64
+          systemctl start httpd.service
+          systemctl enable httpd.service
+          echo "Hello World from $(hostname -f)" > /var/www/html/index.html
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      LaunchConfigurationName: !Ref ApacheLinux2LaunchConfig
+      MaxSize: 2
+      MinSize: 2
+      TargetGroupARNs:
+        - !Ref EC2TargetGroup
+      VPCZoneIdentifier:
+        - !Ref SubnetA
+        - !Ref SubnetB
+
   #EC2 on Amazon Linux2 image
   AmazonLinuxInstance:
     Type: AWS::EC2::Instance
@@ -81,9 +112,9 @@ Resources:
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: '20'
-      Targets:
-        - Id: !Ref AmazonLinuxInstance
-          Port: 80
+      # Targets:
+      #   - Id: !Ref AmazonLinuxInstance
+      #     Port: 80
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPC
       Tags:

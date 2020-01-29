@@ -4,17 +4,17 @@ Description: ELB with EC2 target groups asociated
 Parameters:
   SSHKeyName:
     Description: 'Name of the ec2 key you need one to use this template'
-    Type: 'AWS::EC2::KeyPair::KeyName'
-    Default: EU_IRL_TEST_KEYS.pem
+    Type: String
+    #Default: EU_IRL_TEST_KEYS
   VPC:
     Type: String
-    Default: vpc-c80131ae
+    #Default: vpc-c80131ae
   SubnetA:
     Type: String
-    Default: subnet-fe2a4798
+    #Default: subnet-fe2a4798
   SubnetB:
     Type: String
-    Default: subnet-7f852a25
+    #Default: subnet-7f852a25
 
 Resources:
   # EC2 Security group allowing Port 22 from anywhere and 80 from SG accociated to ALB
@@ -76,27 +76,6 @@ Resources:
         - !Ref SubnetA
         - !Ref SubnetB
 
-  #EC2 on Amazon Linux2 image
-  AmazonLinuxInstance:
-    Type: AWS::EC2::Instance
-    Properties:
-      ImageId: ami-0713f98de93617bb4 #Amazon Linux 2 image
-      InstanceInitiatedShutdownBehavior: stop
-      InstanceType: t2.micro
-      KeyName: !Ref SSHKeyName
-      Monitoring: true
-      SecurityGroupIds:
-        - !Ref EC2SecurityGroup
-      Tenancy: default
-      UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash -xe
-          yum update -y
-          yum install -y httpd.x86_64
-          systemctl start httpd.service
-          systemctl enable httpd.service
-          echo "Hello World from $(hostname -f)" > /var/www/html/index.html
-
   EC2TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -112,9 +91,6 @@ Resources:
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: '20'
-      # Targets:
-      #   - Id: !Ref AmazonLinuxInstance
-      #     Port: 80
       UnhealthyThresholdCount: 3
       VpcId: !Ref VPC
       Tags:

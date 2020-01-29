@@ -5,16 +5,12 @@ Parameters:
   SSHKeyName:
     Description: 'Name of the ec2 key you need one to use this template'
     Type: String
-    #Default: EU_IRL_TEST_KEYS
   VPC:
     Type: String
-    #Default: vpc-c80131ae
   SubnetA:
     Type: String
-    #Default: subnet-fe2a4798
   SubnetB:
     Type: String
-    #Default: subnet-7f852a25
 
 Resources:
   # EC2 Security group allowing Port 22 from anywhere and 80 from SG accociated to ALB

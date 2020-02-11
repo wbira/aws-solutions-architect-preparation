@@ -1,0 +1,18 @@
+[
+  {
+    "ParameterKey": "SSHKeyName",
+    "ParameterValue": "keyname"
+  },
+  {
+    "ParameterKey": "VPC",
+    "ParameterValue": "vpc-id"
+  },
+  {
+    "ParameterKey": "SubnetA",
+    "ParameterValue": "first-subnet"
+  },
+  {
+    "ParameterKey": "SubnetB",
+    "ParameterValue": "second-subnet"
+  }
+]

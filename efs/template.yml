@@ -13,6 +13,39 @@ Parameters:
     Type: String
 
 Resources:
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+
+  # EFS Security Group allowing Port 80 from anywhere
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Allow efs connection'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref EC2SecurityGroup
+
+  MountTargetA:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SecurityGroups:
+        - !Ref EFSSecurityGroup
+      SubnetId: !Ref SubnetA
+
+  MountTargetB:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SecurityGroups:
+        - !Ref EFSSecurityGroup
+      SubnetId: !Ref SubnetB
+
   # EC2 Security group allowing Port 22 from anywhere and 80 from SG accociated to ALB
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -56,9 +89,12 @@ Resources:
           #!/bin/bash -xe
           yum update -y
           yum install -y httpd.x86_64
+          yum install -y amazon-efs-utils
           systemctl start httpd.service
           systemctl enable httpd.service
           echo "Hello World from $(hostname -f)" > /var/www/html/index.html
+          mkdir /efs
+          mount -t efs ${FileSystem} /efs
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup

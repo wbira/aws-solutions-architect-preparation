@@ -85,16 +85,19 @@ Resources:
       SecurityGroups:
         - !Ref EC2SecurityGroup
       UserData:
-        Fn::Base64: !Sub |
-          #!/bin/bash -xe
-          yum update -y
-          yum install -y httpd.x86_64
-          yum install -y amazon-efs-utils
-          systemctl start httpd.service
-          systemctl enable httpd.service
-          echo "Hello World from $(hostname -f)" > /var/www/html/index.html
-          mkdir /efs
-          mount -t efs ${FileSystem} /efs
+        Fn::Base64:
+          Fn::Sub:
+            - |
+              #!/bin/bash -xe
+              yum update -y
+              yum install -y httpd.x86_64
+              yum install -y amazon-efs-utils
+              systemctl start httpd.service
+              systemctl enable httpd.service
+              echo "Hello World from $(hostname -f)" > /var/www/html/index.html
+              mkdir /efs
+              mount -t efs ${FileSystemId}:/ /efs
+            - FileSystemId: !Ref FileSystem
 
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup

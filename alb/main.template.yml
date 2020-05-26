@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: This template wires together all nested stacks.
+
+Parameters:
+  SSHKeyName:
+    Description: 'Name of the ec2 key you need one to use this template'
+    Type: AWS::EC2::KeyPair::KeyName
+
+Resources:
+  Api:
+    Type: 'AWS::Serverless::Application'
+    Properties:
+      Location: 'app.template.yml'
+      Parameters:
+        SSHKeyName: !Ref SSHKeyName
+    DependsOn: Vpc
+  Vpc:
+    Type: 'AWS::Serverless::Application'
+    Properties:
+      Location: 'vpc.template.yml'

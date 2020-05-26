@@ -4,13 +4,7 @@ Description: ELB with EC2 target groups asociated
 Parameters:
   SSHKeyName:
     Description: 'Name of the ec2 key you need one to use this template'
-    Type: String
-  VPC:
-    Type: String
-  SubnetA:
-    Type: String
-  SubnetB:
-    Type: String
+    Type: AWS::EC2::KeyPair::KeyName
 
 Resources:
   # EC2 Security group allowing Port 22 from anywhere and 80 from SG accociated to ALB
@@ -18,7 +12,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: 'SSH and Port 80'
-      VpcId: !Ref VPC
+      VpcId: !ImportValue VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -34,7 +28,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: 'SSH and Port 80'
-      VpcId: !Ref VPC
+      VpcId: !ImportValue VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -69,8 +63,8 @@ Resources:
       TargetGroupARNs:
         - !Ref EC2TargetGroup
       VPCZoneIdentifier:
-        - !Ref SubnetA
-        - !Ref SubnetB
+        - !ImportValue SubnetA
+        - !ImportValue SubnetB
 
   EC2TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -88,7 +82,7 @@ Resources:
         - Key: deregistration_delay.timeout_seconds
           Value: '20'
       UnhealthyThresholdCount: 3
-      VpcId: !Ref VPC
+      VpcId: !ImportValue VPC
       Tags:
         - Key: Name
           Value: EC2TargetGroup
@@ -100,8 +94,8 @@ Resources:
     Properties:
       Scheme: internet-facing
       Subnets:
-        - !Ref SubnetA
-        - !Ref SubnetB
+        - !ImportValue SubnetA
+        - !ImportValue SubnetB
       SecurityGroups:
         - !Ref ELBSecurityGroup
 
